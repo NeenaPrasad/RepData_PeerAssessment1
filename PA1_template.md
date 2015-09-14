@@ -126,6 +126,7 @@ dfMeanActivity[dfMeanActivity$meanSteps == max(dfMeanActivity$meanSteps),]
 
 ```r
 ## Calculate and report the total number of missing values in the dataset
+
 sum(is.na(activity$steps))
 ```
 
@@ -138,7 +139,7 @@ sum(is.na(activity$steps))
 
 ##3. Create a new datset that is equal to the original dataset but the missing data filled in
 
-## Creating 
+
 
 ## Filling in the missing data with mean of the interval and creating a new dataset
 
@@ -146,13 +147,20 @@ sum(is.na(activity$steps))
 
 fillActivity <- activity
 
-
-
-i <- integer(0)
-id <- which(is.na(activity$steps))
-for (i in id) {
-        fillActivity$steps[i] <- dfMeanActivity$meanSteps[fillActivity$interval[i] == dfMeanActivity$interval]
+## Function to substitute NA values in the dataset with mean values
+evalNAval <- function(index){
+        temp <- activity[index,]
+        return(dfMeanActivity$meanSteps[temp$interval == dfMeanActivity$interval])     
 }
+
+## row numbers corresponding to NA values
+
+id <- which(is.na(activity$steps))
+
+## replacing the NA values with the mean values
+
+fillActivity$steps[is.na(activity$steps)] <- sapply(id, evalNAval)
+
 
 dfActivityFill <- aggregate(x = list(totSteps = fillActivity$steps), by = list(Date = fillActivity$date), FUN = sum)
 
@@ -218,7 +226,7 @@ head(dfActivityFill, n = 20)
 
 ggplot(dfActivityFill, aes(x = dfActivityFill$Date, y = dfActivityFill$totSteps))+
         geom_histogram(stat = "identity")+ labs(title = "Total Steps over days",
-        x ="Total Steps in a day", y = "Count")
+                                                x ="Total Steps in a day", y = "Count")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
@@ -258,11 +266,7 @@ median(dfActivity$totSteps, na.rm = TRUE)
 ```
 
 ```r
-print("The value have not changed much with the mean value data insertion")
-```
-
-```
-## [1] "The value have not changed much with the mean value data insertion"
+## The mean and median values have not changed much with the mean value data insertion
 ```
 
 
@@ -316,9 +320,9 @@ head(fillActivity,n=20)
 dfWkActivity <- aggregate(list(meanSteps = fillActivity$steps), by =  list(interval = fillActivity$interval,dayOfWeek = fillActivity$dayOfWeek), FUN = mean)
 
 
-ggplot(dfWkActivity, aes(x=interval, y = meanSteps))+geom_line()+
+ggplot(dfWkActivity, aes(x=interval, y = meanSteps, col = dayOfWeek))+geom_line()+
         labs(title = "Mean Steps in 5 minute intervals", 
-        x ="Interval", y = "Number of steps")+
+             x ="Interval", y = "Number of steps")+
         facet_grid(dayOfWeek~.)
 ```
 
