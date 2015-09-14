@@ -28,35 +28,36 @@ head(activity)
 ```r
 ## 1. Calculate the total number of steps per day
 ## aggregate to obtain the total steps per day
-## ignoring missing values
+## ignoring missing values, this will however be done by the histogram with NA equated to zero
 
-dfActivity <- aggregate(x = list(totSteps = activity$steps), by = list(Date = activity$date), FUN = sum)
+igActivity <- activity[complete.cases(activity),]
+dfActivity <- aggregate(x = list(totSteps = igActivity$steps), by = list(Date = igActivity$date), FUN = sum)
 
 head(dfActivity, n = 20, na.rm = TRUE)
 ```
 
 ```
 ##          Date totSteps
-## 1  2012-10-01       NA
-## 2  2012-10-02      126
-## 3  2012-10-03    11352
-## 4  2012-10-04    12116
-## 5  2012-10-05    13294
-## 6  2012-10-06    15420
-## 7  2012-10-07    11015
-## 8  2012-10-08       NA
-## 9  2012-10-09    12811
-## 10 2012-10-10     9900
-## 11 2012-10-11    10304
-## 12 2012-10-12    17382
-## 13 2012-10-13    12426
-## 14 2012-10-14    15098
-## 15 2012-10-15    10139
-## 16 2012-10-16    15084
-## 17 2012-10-17    13452
-## 18 2012-10-18    10056
-## 19 2012-10-19    11829
-## 20 2012-10-20    10395
+## 1  2012-10-02      126
+## 2  2012-10-03    11352
+## 3  2012-10-04    12116
+## 4  2012-10-05    13294
+## 5  2012-10-06    15420
+## 6  2012-10-07    11015
+## 7  2012-10-09    12811
+## 8  2012-10-10     9900
+## 9  2012-10-11    10304
+## 10 2012-10-12    17382
+## 11 2012-10-13    12426
+## 12 2012-10-14    15098
+## 13 2012-10-15    10139
+## 14 2012-10-16    15084
+## 15 2012-10-17    13452
+## 16 2012-10-18    10056
+## 17 2012-10-19    11829
+## 18 2012-10-20    10395
+## 19 2012-10-21     8821
+## 20 2012-10-22    13460
 ```
 
 ```r
@@ -68,15 +69,11 @@ ggplot(dfActivity, aes(x = dfActivity$Date, y = dfActivity$totSteps))+
         x ="Total Steps in a day", y = "Count")
 ```
 
-```
-## Warning: Removed 8 rows containing missing values (position_stack).
-```
-
 ![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
 
 ```r
 ##3.  Mean and median of total number of steps taken per day
-## mean and median of total steps per day
+## mean and median of total steps per day ignoring NA values
 mean(dfActivity$totSteps, na.rm = TRUE)
 ```
 
@@ -275,7 +272,7 @@ median(dfActivity$totSteps, na.rm = TRUE)
 ```r
 ## 1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-
+## Function to evaluate if a day is weekday or weekend
 evalDay <- function(dateVal){
         if (weekdays(dateVal) %in% c("Sunday","Saturday")) {
                 return(0)

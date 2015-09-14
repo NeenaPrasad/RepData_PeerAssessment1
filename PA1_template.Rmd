@@ -27,9 +27,10 @@ head(activity)
 
 ## 1. Calculate the total number of steps per day
 ## aggregate to obtain the total steps per day
-## ignoring missing values
+## ignoring missing values, this will however be done by the histogram with NA equated to zero
 
-dfActivity <- aggregate(x = list(totSteps = activity$steps), by = list(Date = activity$date), FUN = sum)
+igActivity <- activity[complete.cases(activity),]
+dfActivity <- aggregate(x = list(totSteps = igActivity$steps), by = list(Date = igActivity$date), FUN = sum)
 
 head(dfActivity, n = 20, na.rm = TRUE)
 
@@ -42,9 +43,10 @@ ggplot(dfActivity, aes(x = dfActivity$Date, y = dfActivity$totSteps))+
 
 
 ##3.  Mean and median of total number of steps taken per day
-## mean and median of total steps per day
+## mean and median of total steps per day ignoring NA values
 mean(dfActivity$totSteps, na.rm = TRUE)
 median(dfActivity$totSteps, na.rm = TRUE)
+
         
 ```
 
@@ -135,7 +137,7 @@ median(dfActivity$totSteps, na.rm = TRUE)
 ```{r, echo = TRUE}
 ## 1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-
+## Function to evaluate if a day is weekday or weekend
 evalDay <- function(dateVal){
         if (weekdays(dateVal) %in% c("Sunday","Saturday")) {
                 return(0)
