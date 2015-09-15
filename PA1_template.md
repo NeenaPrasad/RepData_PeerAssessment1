@@ -1,70 +1,111 @@
 # Reproducible Research: Peer Assessment 1
 
-## Loading and preprocessing the data
+The objective of this assignment is to create a R markdown document for the Peer Assessment 1 for the coursera course repdata-032: Reproducible Data Research. The excercise includes to test the understanding of the R markdown while doing a simple analytical problem.
+
+It involves the usage of data from a personal activity monitoring device, with data collected ( number of steps taken in a five minute interval all day) every 5 minutes over a 2 month period(October to November, 2012) from an anonymous user.
+
+
+
+### 1. Loading required library for data processing
+
+
+```r
+if (!("ggplot2") %in% installed.packages()) install.packages("ggplot2")
+if (!("dplyr") %in% installed.packages()) install.packages("dplyr")
+library(dplyr)
+library(ggplot2)
+if (!("activity.csv" %in% dir())) unzip("activity.zip")
+```
+
+### 2. Loading and preprocessing the data
+
+Dataset is stored in "activity.csv" file and is read into dataset, and the format of the date column is changed. Summary of the data is provided.  
 
 ```r
 ## reading the csv file into R and changing the date format
 activity <- read.csv("activity.csv")
 activity$date <- as.Date(activity$date, "%Y-%m-%d")
 
-
-## Viewing the data structure
-head(activity)
+## summary of the data
+summary(activity)
 ```
 
 ```
-##   steps       date interval
-## 1    NA 2012-10-01        0
-## 2    NA 2012-10-01        5
-## 3    NA 2012-10-01       10
-## 4    NA 2012-10-01       15
-## 5    NA 2012-10-01       20
-## 6    NA 2012-10-01       25
+##      steps             date               interval     
+##  Min.   :  0.00   Min.   :2012-10-01   Min.   :   0.0  
+##  1st Qu.:  0.00   1st Qu.:2012-10-16   1st Qu.: 588.8  
+##  Median :  0.00   Median :2012-10-31   Median :1177.5  
+##  Mean   : 37.38   Mean   :2012-10-31   Mean   :1177.5  
+##  3rd Qu.: 12.00   3rd Qu.:2012-11-15   3rd Qu.:1766.2  
+##  Max.   :806.00   Max.   :2012-11-30   Max.   :2355.0  
+##  NA's   :2304
 ```
-
-
-## What is mean total number of steps taken per day?
 
 ```r
-## 1. Calculate the total number of steps per day
+## quick peak into values in columns
+str(activity)
+```
 
-## ignoring missing values, this will however be done by the histogram with NA equated to zero
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
+
+The dataset has 17568 observations with three variables.  
+
+##### Variables
+- **steps**: Number of steps taking in a 5-minute interval (missing values are coded as NA)
+
+- **date**: The date on which the measurement was taken in YYYY-MM-DD format
+
+- **interval**: Identifier for the 5-minute interval in which measurement was taken
+
+
+### 3. What is mean total number of steps taken per day?
+
+Questions:  
+1. Make a histogram of the total number of steps taken each day.  
+2. Calculate and report the mean and median total number of steps taken per day
+
+```r
+## ignoring missing values as per the question states, (this will however be done by the histogram with NA equated to zero)
 
 igActivity <- activity[complete.cases(activity),]
 
-## aggregate to obtain the total steps per day
-dfActivity <- aggregate(x = list(totSteps = igActivity$steps), by = list(Date = igActivity$date), FUN = sum)
-
-## Sample of the data
-head(dfActivity, n = 20, na.rm = TRUE)
+## column values with NA ignored
+str(igActivity)
 ```
 
 ```
-##          Date totSteps
-## 1  2012-10-02      126
-## 2  2012-10-03    11352
-## 3  2012-10-04    12116
-## 4  2012-10-05    13294
-## 5  2012-10-06    15420
-## 6  2012-10-07    11015
-## 7  2012-10-09    12811
-## 8  2012-10-10     9900
-## 9  2012-10-11    10304
-## 10 2012-10-12    17382
-## 11 2012-10-13    12426
-## 12 2012-10-14    15098
-## 13 2012-10-15    10139
-## 14 2012-10-16    15084
-## 15 2012-10-17    13452
-## 16 2012-10-18    10056
-## 17 2012-10-19    11829
-## 18 2012-10-20    10395
-## 19 2012-10-21     8821
-## 20 2012-10-22    13460
+## 'data.frame':	15264 obs. of  3 variables:
+##  $ steps   : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ date    : Date, format: "2012-10-02" "2012-10-02" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
 
 ```r
-## 2. Histogram of total number of steps taken each day
+## aggregate to obtain the total steps per day
+dfActivity <- aggregate(x = list(totSteps = igActivity$steps), by = list(Date = igActivity$date), FUN = sum)
+
+## ummary of data
+summary(dfActivity)
+```
+
+```
+##       Date               totSteps    
+##  Min.   :2012-10-02   Min.   :   41  
+##  1st Qu.:2012-10-16   1st Qu.: 8841  
+##  Median :2012-10-29   Median :10765  
+##  Mean   :2012-10-30   Mean   :10766  
+##  3rd Qu.:2012-11-16   3rd Qu.:13294  
+##  Max.   :2012-11-29   Max.   :21194
+```
+
+
+```r
 ## plotting the count of steps
 
 ggplot(dfActivity, aes(x = dfActivity$Date, y = dfActivity$totSteps))+
@@ -72,47 +113,42 @@ ggplot(dfActivity, aes(x = dfActivity$Date, y = dfActivity$totSteps))+
         x ="Total Steps in a day", y = "Count")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+<img src="PA1_template_files/figure-html/unnamed-chunk-4-1.png" title="" alt="" style="display: block; margin: auto;" />
+
 
 ```r
-##3.  Mean and median of total number of steps taken per day
 ## mean and median of total steps per day ignoring NA values
-mean(dfActivity$totSteps, na.rm = TRUE)
+meanTotal <- prettyNum(mean(dfActivity$totSteps, na.rm = TRUE))
+medianTotal <- prettyNum(median(dfActivity$totSteps, na.rm = TRUE))
 ```
+Mean of the data is 10766.19   
+Median of the data is 10765
 
-```
-## [1] 10766.19
-```
+### 4. What is the average daily activity pattern?
 
-```r
-median(dfActivity$totSteps, na.rm = TRUE)
-```
-
-```
-## [1] 10765
-```
-
-
-## What is the average daily activity pattern?
+Questions:  
+1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)  
+2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?  
 
 ```r
 ## removing NA values and calculating average steps in an interval over days
 dfMeanActivity <-  aggregate(x = list(meanSteps = activity$steps), by = list(interval = activity$interval), FUN = mean, na.rm = TRUE)
+```
 
-## 1. Make a time series plot of the 5 minute inteval and average number of steps taken 
-## averaged across all days
 
+```r
 ggplot(dfMeanActivity, aes(x=interval, y = meanSteps))+geom_line()+
         labs(title = "Mean Steps in 5 minute intervals", 
         x ="Time interval - 5 minute", y = "Mean steps")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+<img src="PA1_template_files/figure-html/unnamed-chunk-7-1.png" title="" alt="" style="display: block; margin: auto;" />
+
 
 ```r
-## 2. Which 5-minute interval, on average across all the days in the dataset,contains the maximum number of steps?
-
-dfMeanActivity[dfMeanActivity$meanSteps == max(dfMeanActivity$meanSteps),]
+## maximum activity is found and interval is noted
+maxActivity <- dfMeanActivity[dfMeanActivity$meanSteps == max(dfMeanActivity$meanSteps),]
+maxActivity
 ```
 
 ```
@@ -120,26 +156,32 @@ dfMeanActivity[dfMeanActivity$meanSteps == max(dfMeanActivity$meanSteps),]
 ## 104      835  206.1698
 ```
 
-#### Peak activity is around 0835 interval in the morning recording the maximum number of steps
+Peak activity is around 835 interval in the morning corresponding to the maximum number of steps
 
-## Imputing missing values
+### 5. Imputing missing values
+
+Questions:  
+1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)  
+2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
+4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
 
 ```r
-## Calculate and report the total number of missing values in the dataset
-
-sum(is.na(activity$steps))
+## Calculating the total number of missing values in the dataset
+missVal <- sum(!complete.cases(activity))
+missVal
 ```
 
 ```
 ## [1] 2304
 ```
 
+Total number of missing values is 2304
+
+
 ```r
-##2. Device a strategy for filling in all missing values in the dataset. THe strategy does not need to be sophosticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval,etc.
-
-##3. Create a new datset that is equal to the original dataset but the missing data filled in
-
-## Filling in the missing data with mean of the interval and creating a new dataset
+## Filling in the missing data with mean of the interval,ie, if data is missing in interval "5", then 'mean for the interval "5" over days' is filled in that position and thereby, creating a new dataset
 
 fillActivity <- activity
 
@@ -149,84 +191,63 @@ evalNAval <- function(index){
         return(dfMeanActivity$meanSteps[temp$interval == dfMeanActivity$interval])     
 }
 
-## row numbers corresponding to NA values
-
+## row numbers corresponding to NA values to define which of the values to replace
 id <- which(is.na(activity$steps))
 
 ## replacing the NA values with the mean values
-
 fillActivity$steps[is.na(activity$steps)] <- sapply(id, evalNAval)
 
-## aggregate to obtain the total steps per day
+## sample of original dataset
+str(activity)
+```
 
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
+```r
+## sample column values for substituted dataset
+str(fillActivity)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : num  1.717 0.3396 0.1321 0.1509 0.0755 ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
+```r
+## aggregate to obtain the total steps per day
 dfActivityFill <- aggregate(x = list(totSteps = fillActivity$steps), by = list(Date = fillActivity$date), FUN = sum)
 
-## new dataset with substitute values
-head(fillActivity, n = 20)
+## summary of aggregated dataset
+summary(dfActivityFill)
 ```
 
 ```
-##        steps       date interval
-## 1  1.7169811 2012-10-01        0
-## 2  0.3396226 2012-10-01        5
-## 3  0.1320755 2012-10-01       10
-## 4  0.1509434 2012-10-01       15
-## 5  0.0754717 2012-10-01       20
-## 6  2.0943396 2012-10-01       25
-## 7  0.5283019 2012-10-01       30
-## 8  0.8679245 2012-10-01       35
-## 9  0.0000000 2012-10-01       40
-## 10 1.4716981 2012-10-01       45
-## 11 0.3018868 2012-10-01       50
-## 12 0.1320755 2012-10-01       55
-## 13 0.3207547 2012-10-01      100
-## 14 0.6792453 2012-10-01      105
-## 15 0.1509434 2012-10-01      110
-## 16 0.3396226 2012-10-01      115
-## 17 0.0000000 2012-10-01      120
-## 18 1.1132075 2012-10-01      125
-## 19 1.8301887 2012-10-01      130
-## 20 0.1698113 2012-10-01      135
+##       Date               totSteps    
+##  Min.   :2012-10-01   Min.   :   41  
+##  1st Qu.:2012-10-16   1st Qu.: 9819  
+##  Median :2012-10-31   Median :10766  
+##  Mean   :2012-10-31   Mean   :10766  
+##  3rd Qu.:2012-11-15   3rd Qu.:12811  
+##  Max.   :2012-11-30   Max.   :21194
 ```
+
 
 ```r
-## aggregate data set
-head(dfActivityFill, n = 20)
-```
-
-```
-##          Date totSteps
-## 1  2012-10-01 10766.19
-## 2  2012-10-02   126.00
-## 3  2012-10-03 11352.00
-## 4  2012-10-04 12116.00
-## 5  2012-10-05 13294.00
-## 6  2012-10-06 15420.00
-## 7  2012-10-07 11015.00
-## 8  2012-10-08 10766.19
-## 9  2012-10-09 12811.00
-## 10 2012-10-10  9900.00
-## 11 2012-10-11 10304.00
-## 12 2012-10-12 17382.00
-## 13 2012-10-13 12426.00
-## 14 2012-10-14 15098.00
-## 15 2012-10-15 10139.00
-## 16 2012-10-16 15084.00
-## 17 2012-10-17 13452.00
-## 18 2012-10-18 10056.00
-## 19 2012-10-19 11829.00
-## 20 2012-10-20 10395.00
-```
-
-```r
-## 4. Make the histogram of total number of steps taken each day and Calculate and report mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+## Histogram of total number of steps taken each day and Calculate and report mean and median total number of steps taken per day. 
 
 ggplot(dfActivityFill, aes(x = dfActivityFill$Date, y = dfActivityFill$totSteps))+
         geom_histogram(stat = "identity")+ labs(title = "Total Steps over days",
                                                 x ="Total Steps in a day", y = "Count")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+<img src="PA1_template_files/figure-html/unnamed-chunk-11-1.png" title="" alt="" style="display: block; margin: auto;" />
 
 ```r
 ## mean and median of new dataset
@@ -261,15 +282,19 @@ median(dfActivity$totSteps, na.rm = TRUE)
 ```
 ## [1] 10765
 ```
-#### The mean and median values have not changed much with the mean value data insertion
+  
+The mean and median values have not changed much with the mean value data insertion. The graph however shows data for October 1, which was removed earlier because of non availability, the total data is filled in, however does not alter the mean and median values much, which might be due to the fact that mean interval value was added.
+  
 
-
-## Are there differences in activity patterns between weekdays and weekends?
+### 6. Are there differences in activity patterns between weekdays and weekends?
+  
+Questions:  
+1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.  
+2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).  
 
 ```r
-## 1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
-
 ## Function to evaluate if a day is weekday or weekend
+## Returns "1" for "weekday" and "0" for "weekend"
 evalDay <- function(dateVal){
         if (weekdays(dateVal) %in% c("Sunday","Saturday")) {
                 return(0)
@@ -277,52 +302,55 @@ evalDay <- function(dateVal){
         return(1)
 }
 
+## Creating new column day of week and evaluationg if "weekday" or "weekend"
 fillActivity$dayOfWeek <- sapply(fillActivity$date, evalDay)
+
+## Factor variable relabelled with appropriate easily understood names
+## 1 --> weekday, 0 --> weekend
 fillActivity$dayOfWeek <- factor(fillActivity$dayOfWeek, levels = c(1,0), 
                                  labels = c("weekday", "weekend"))
 
-head(fillActivity,n=20)
+## Dataset column values
+str(fillActivity)
 ```
 
 ```
-##        steps       date interval dayOfWeek
-## 1  1.7169811 2012-10-01        0   weekday
-## 2  0.3396226 2012-10-01        5   weekday
-## 3  0.1320755 2012-10-01       10   weekday
-## 4  0.1509434 2012-10-01       15   weekday
-## 5  0.0754717 2012-10-01       20   weekday
-## 6  2.0943396 2012-10-01       25   weekday
-## 7  0.5283019 2012-10-01       30   weekday
-## 8  0.8679245 2012-10-01       35   weekday
-## 9  0.0000000 2012-10-01       40   weekday
-## 10 1.4716981 2012-10-01       45   weekday
-## 11 0.3018868 2012-10-01       50   weekday
-## 12 0.1320755 2012-10-01       55   weekday
-## 13 0.3207547 2012-10-01      100   weekday
-## 14 0.6792453 2012-10-01      105   weekday
-## 15 0.1509434 2012-10-01      110   weekday
-## 16 0.3396226 2012-10-01      115   weekday
-## 17 0.0000000 2012-10-01      120   weekday
-## 18 1.1132075 2012-10-01      125   weekday
-## 19 1.8301887 2012-10-01      130   weekday
-## 20 0.1698113 2012-10-01      135   weekday
+## 'data.frame':	17568 obs. of  4 variables:
+##  $ steps    : num  1.717 0.3396 0.1321 0.1509 0.0755 ...
+##  $ date     : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval : int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ dayOfWeek: Factor w/ 2 levels "weekday","weekend": 1 1 1 1 1 1 1 1 1 1 ...
 ```
 
 ```r
-## 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
+## summary of fillActivity dataset
+summary(fillActivity)
+```
 
+```
+##      steps             date               interval        dayOfWeek    
+##  Min.   :  0.00   Min.   :2012-10-01   Min.   :   0.0   weekday:12960  
+##  1st Qu.:  0.00   1st Qu.:2012-10-16   1st Qu.: 588.8   weekend: 4608  
+##  Median :  0.00   Median :2012-10-31   Median :1177.5                  
+##  Mean   : 37.38   Mean   :2012-10-31   Mean   :1177.5                  
+##  3rd Qu.: 27.00   3rd Qu.:2012-11-15   3rd Qu.:1766.2                  
+##  Max.   :806.00   Max.   :2012-11-30   Max.   :2355.0
+```
+
+
+```r
+## aggregate dataset with average steps in an interval during weekend and weekdays
 dfWkActivity <- aggregate(list(meanSteps = fillActivity$steps), by =  list(interval = fillActivity$interval,dayOfWeek = fillActivity$dayOfWeek), FUN = mean)
 
-
+## panel plot with a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 ggplot(dfWkActivity, aes(x=interval, y = meanSteps, col = dayOfWeek))+geom_line()+
         labs(title = "Mean Steps in 5 minute intervals", 
              x ="Interval", y = "Number of steps")+
         facet_grid(dayOfWeek~.)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
+<img src="PA1_template_files/figure-html/unnamed-chunk-13-1.png" title="" alt="" style="display: block; margin: auto;" />
 
 
-
-#### During weekdays there is increased activity around 8 to 10 interval, which subsides over the time till night. During weekends peak activity happens a little later than weekdays and is maintained around 50 steps till about 2000 at night. Night time steps are also shifted a little to the right compared to the weekdays.
+During **weekdays** there is _**increased**_ activity around **8 to 10** interval(roughly), which subsides over the time till night. During weekends peak activity happens a little later than weekday. Night time steps are also shifted a little to the right compared to the weekdays.The peak activity during a weekday is 230 during the interval 835 and that of weekend is 167 during the interval 915 which is lesser than weekend. But the mean activity all through weekend is 42 is higher than the weekday mean 36, which implies a higher level of activity through out the day during weekend than that in weekday.
 
