@@ -84,12 +84,15 @@ head(activity)</code></pre>
 <div id="what-is-mean-total-number-of-steps-taken-per-day" class="section level2">
 <h2>What is mean total number of steps taken per day?</h2>
 <pre class="r"><code>## 1. Calculate the total number of steps per day
-## aggregate to obtain the total steps per day
+
 ## ignoring missing values, this will however be done by the histogram with NA equated to zero
 
 igActivity &lt;- activity[complete.cases(activity),]
+
+## aggregate to obtain the total steps per day
 dfActivity &lt;- aggregate(x = list(totSteps = igActivity$steps), by = list(Date = igActivity$date), FUN = sum)
 
+## Sample of the data
 head(dfActivity, n = 20, na.rm = TRUE)</code></pre>
 <pre><code>##          Date totSteps
 ## 1  2012-10-02      126
@@ -143,6 +146,9 @@ ggplot(dfMeanActivity, aes(x=interval, y = meanSteps))+geom_line()+
 dfMeanActivity[dfMeanActivity$meanSteps == max(dfMeanActivity$meanSteps),]</code></pre>
 <pre><code>##     interval meanSteps
 ## 104      835  206.1698</code></pre>
+<div id="peak-activity-is-around-0835-interval-in-the-morning-recording-the-maximum-number-of-steps" class="section level4">
+<h4>Peak activity is around 0835 interval in the morning recording the maximum number of steps</h4>
+</div>
 </div>
 <div id="imputing-missing-values" class="section level2">
 <h2>Imputing missing values</h2>
@@ -154,11 +160,7 @@ sum(is.na(activity$steps))</code></pre>
 
 ##3. Create a new datset that is equal to the original dataset but the missing data filled in
 
-
-
 ## Filling in the missing data with mean of the interval and creating a new dataset
-
-
 
 fillActivity &lt;- activity
 
@@ -176,6 +178,7 @@ id &lt;- which(is.na(activity$steps))
 
 fillActivity$steps[is.na(activity$steps)] &lt;- sapply(id, evalNAval)
 
+## aggregate to obtain the total steps per day
 
 dfActivityFill &lt;- aggregate(x = list(totSteps = fillActivity$steps), by = list(Date = fillActivity$date), FUN = sum)
 
@@ -241,7 +244,9 @@ mean(dfActivity$totSteps, na.rm = TRUE)</code></pre>
 <pre><code>## [1] 10766.19</code></pre>
 <pre class="r"><code>median(dfActivity$totSteps, na.rm = TRUE)</code></pre>
 <pre><code>## [1] 10765</code></pre>
-<pre class="r"><code>## The mean and median values have not changed much with the mean value data insertion</code></pre>
+<div id="the-mean-and-median-values-have-not-changed-much-with-the-mean-value-data-insertion" class="section level4">
+<h4>The mean and median values have not changed much with the mean value data insertion</h4>
+</div>
 </div>
 <div id="are-there-differences-in-activity-patterns-between-weekdays-and-weekends" class="section level2">
 <h2>Are there differences in activity patterns between weekdays and weekends?</h2>

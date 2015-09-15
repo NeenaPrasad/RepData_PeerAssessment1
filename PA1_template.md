@@ -27,12 +27,15 @@ head(activity)
 
 ```r
 ## 1. Calculate the total number of steps per day
-## aggregate to obtain the total steps per day
+
 ## ignoring missing values, this will however be done by the histogram with NA equated to zero
 
 igActivity <- activity[complete.cases(activity),]
+
+## aggregate to obtain the total steps per day
 dfActivity <- aggregate(x = list(totSteps = igActivity$steps), by = list(Date = igActivity$date), FUN = sum)
 
+## Sample of the data
 head(dfActivity, n = 20, na.rm = TRUE)
 ```
 
@@ -117,7 +120,7 @@ dfMeanActivity[dfMeanActivity$meanSteps == max(dfMeanActivity$meanSteps),]
 ## 104      835  206.1698
 ```
 
-
+#### Peak activity is around 0835 interval in the morning recording the maximum number of steps
 
 ## Imputing missing values
 
@@ -136,11 +139,7 @@ sum(is.na(activity$steps))
 
 ##3. Create a new datset that is equal to the original dataset but the missing data filled in
 
-
-
 ## Filling in the missing data with mean of the interval and creating a new dataset
-
-
 
 fillActivity <- activity
 
@@ -158,6 +157,7 @@ id <- which(is.na(activity$steps))
 
 fillActivity$steps[is.na(activity$steps)] <- sapply(id, evalNAval)
 
+## aggregate to obtain the total steps per day
 
 dfActivityFill <- aggregate(x = list(totSteps = fillActivity$steps), by = list(Date = fillActivity$date), FUN = sum)
 
@@ -261,10 +261,7 @@ median(dfActivity$totSteps, na.rm = TRUE)
 ```
 ## [1] 10765
 ```
-
-```r
-## The mean and median values have not changed much with the mean value data insertion
-```
+#### The mean and median values have not changed much with the mean value data insertion
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -328,3 +325,4 @@ ggplot(dfWkActivity, aes(x=interval, y = meanSteps, col = dayOfWeek))+geom_line(
 
 
 #### During weekdays there is increased activity around 8 to 10 interval, which subsides over the time till night. During weekends peak activity happens a little later than weekdays and is maintained around 50 steps till about 2000 at night. Night time steps are also shifted a little to the right compared to the weekdays.
+
