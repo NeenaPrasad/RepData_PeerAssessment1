@@ -103,12 +103,19 @@ Questions:
 ```{r}
 ## removing NA values and calculating average steps in an interval over days
 dfMeanActivity <-  aggregate(x = list(meanSteps = activity$steps), by = list(interval = activity$interval), FUN = mean, na.rm = TRUE)
+
+## A new column with interval as a POSIXct variable
+dfMeanActivity$newint<- as.POSIXct(gsub(" ",0,
+        format(formatC(dfMeanActivity$interval,width = 4,
+        flag = 0), width=6)), format = "%H%M%S")
 ```
 
 ```{r ,fig.align='center', fig.height= 4}
-ggplot(dfMeanActivity, aes(x=interval, y = meanSteps))+geom_line()+
-        labs(title = "Mean Steps in 5 minute intervals", 
-        x ="Time interval - 5 minute", y = "Mean steps")
+
+plot(dfMeanActivity$newint,dfMeanActivity$meanSteps,type="l",
+     main = "Mean Steps in 5 minute intervals",xlab ="Time interval - 5 minute", 
+     ylab = "Mean steps", col = "red",panel.first = grid(lty = "solid")
+     )
 ```
 
 ```{r}
@@ -220,16 +227,44 @@ str(fillActivity)
 summary(fillActivity)
 ```
 
-```{r, fig.align='center',fig.height=4}
+```{r, fig.align='center',fig.height=10,fig.width=10}
 ## aggregate dataset with average steps in an interval during weekend and weekdays
 dfWkActivity <- aggregate(list(meanSteps = fillActivity$steps), by =  list(interval = fillActivity$interval,dayOfWeek = fillActivity$dayOfWeek), FUN = mean)
 
+dfWkActivity$int<- as.POSIXct(gsub(" ",0,
+        format(formatC(dfWkActivity$interval,width = 4,
+        flag = 0), width=6)), format = "%H%M%S")
+
 ## panel plot with a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
-ggplot(dfWkActivity, aes(x=interval, y = meanSteps, col = dayOfWeek))+geom_line()+
-        labs(title = "Mean Steps in 5 minute intervals", 
-             x ="Interval", y = "Number of steps")+
-        facet_grid(dayOfWeek~.)
+
+mfrowVal <- par("mfrow")
+par(mfrow = c(2,1),oma = c(0,0,1,2), mar=c(4,4,2,1))
+
+
+with(subset(dfWkActivity,dfWkActivity$dayOfWeek == "weekday"),
+     plot(int,meanSteps,type = "l",
+     main = "WeekDay",xlab ="Time interval - 5 minute", 
+     ylab = "Number of steps", col = "red",panel.first = grid(lty = "solid"))
+)
+
+## To get the same scale for both plots, plotting the weekday with type = "n"
+with(subset(dfWkActivity,dfWkActivity$dayOfWeek == "weekday"),
+     plot(int,meanSteps,type = "n",
+     main = "Weekend",xlab ="Time interval - 5 minute", 
+     ylab = "Number of steps", col = "blue",panel.first = grid(lty = "solid"))
+)
+
+with(subset(dfWkActivity,dfWkActivity$dayOfWeek == "weekend"),
+     lines(int,meanSteps, type = "l",
+     main = "Weekend",xlab ="Time interval - 5 minute", 
+     ylab = "Number of steps", col = "blue",panel.first = grid(lty = "solid")
+     )
+)
+
+title(main = "Mean Steps in 5 minute intervals for weekdays and weekends",outer = TRUE)
+par(mfrow = mfrowVal)
 ```
+
 
 ```{r, include= FALSE}
 wkday <- subset(dfWkActivity, dfWkActivity$dayOfWeek == "weekday")
