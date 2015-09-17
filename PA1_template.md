@@ -378,7 +378,7 @@ with(subset(dfWkActivity,dfWkActivity$dayOfWeek == "weekend"),
      )
 )
 
-title(main = "Mean Steps in 5 minute intervals for weekdays and weekends",outer = TRUE)
+title(main = "      Mean Steps in 5 minute intervals for weekdays and weekends",outer = TRUE)
 ```
 
 <img src="PA1_template_files/figure-html/unnamed-chunk-13-1.png" title="" alt="" style="display: block; margin: auto;" />
