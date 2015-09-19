@@ -12,8 +12,10 @@ It involves the usage of data from a personal activity monitoring device, with d
 ```r
 if (!("ggplot2") %in% installed.packages()) install.packages("ggplot2")
 if (!("dplyr") %in% installed.packages()) install.packages("dplyr")
-library(dplyr)
+if (!("lattice") %in% installed.packages()) install.packages("lattice")
 library(ggplot2)
+library(dplyr)
+library(lattice)
 if (!("activity.csv" %in% dir())) unzip("activity.zip")
 ```
 
@@ -134,10 +136,12 @@ Questions:
 ## removing NA values and calculating average steps in an interval over days
 dfMeanActivity <-  aggregate(x = list(meanSteps = activity$steps), by = list(interval = activity$interval), FUN = mean, na.rm = TRUE)
 
-## A new column with interval as a POSIXct variable
-dfMeanActivity$newint<- as.POSIXct(gsub(" ",0,
-        format(formatC(dfMeanActivity$interval,width = 4,
-        flag = 0), width=6)), format = "%H%M%S")
+## A new column with interval as a POSIXct variable, ie in the format xx(hrs):yy(mints):zz(secnd) with date for easier plotting
+## format the interval to be string of size 4 with leading zeroes and then provide format as %H%M.
+## Can make it to be of size 6 with leading and trailing zeroes with format %H%M%S, but these will be automatically appended.Keeping time zone as default
+
+dfMeanActivity$newint<- as.POSIXct(formatC(dfMeanActivity$interval,width = 4,
+        flag = 0), format = "%H%M")
 ```
 
 
@@ -159,7 +163,7 @@ maxActivity
 
 ```
 ##     interval meanSteps              newint
-## 104      835  206.1698 2015-09-17 08:35:00
+## 104      835  206.1698 2015-09-19 08:35:00
 ```
 
 Peak activity is around 835 interval in the morning corresponding to the maximum number of steps
@@ -201,7 +205,7 @@ evalNAval <- function(index){
 id <- which(is.na(activity$steps))
 
 ## replacing the NA values with the mean values
-fillActivity$steps[is.na(activity$steps)] <- sapply(id, evalNAval)
+fillActivity$steps[id] <- sapply(id, evalNAval)
 
 ## sample of original dataset
 str(activity)
@@ -348,15 +352,36 @@ summary(fillActivity)
 ## aggregate dataset with average steps in an interval during weekend and weekdays
 dfWkActivity <- aggregate(list(meanSteps = fillActivity$steps), by =  list(interval = fillActivity$interval,dayOfWeek = fillActivity$dayOfWeek), FUN = mean)
 
-dfWkActivity$int<- as.POSIXct(gsub(" ",0,
-        format(formatC(dfWkActivity$interval,width = 4,
-        flag = 0), width=6)), format = "%H%M%S")
+## A new column with interval as a POSIXct variable, ie in the format hh:mm:ss with date for easier plotting
+## format the interval to be string of size 4 with leading zeroes and then provide format as %H%M, resultant format will be in hh:mm:ss
+dfWkActivity$int<- as.POSIXct(formatC(dfWkActivity$interval,width = 4,
+        flag = 0), format = "%H%M")
 
-## panel plot with a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
+
+## time sequence to create labels in x axis every hour
+axisVal <- seq(dfWkActivity$int[1],by="1 hour", length =25)
+
+## Using lattice plot for implementation, can also be done with normal plot() function with similar effect.
+## type = g for grid in the graph, "l" for line, 2 row by 1 column layout
+## grouped by weekend and weekday groups to give colour to the plots
+## labels in hh:mm:ss format and rotated 45 degrees fo readability
+
+xyplot(data = dfWkActivity, meanSteps~int|dayOfWeek, type = c("l","g"),
+     layout = c(1,2), col = c("red","blue"), groups = dayOfWeek,
+     scales = list(x = list(at = axisVal, labels = format(axisVal,"%H:%M:%S"),rot = 45)),
+     xlab ="Time interval - 5 minute", ylab = "Number of steps",
+     main = " Mean Steps in 5 minute intervals for weekdays and weekends")
+```
+
+<img src="PA1_template_files/figure-html/unnamed-chunk-13-1.png" title="" alt="" style="display: block; margin: auto;" />
+
+
+```r
+## Code to plot with normal plot() function, graph not included
+## panel plot with a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). Time zone is not changed.
 
 mfrowVal <- par("mfrow")
 par(mfrow = c(2,1),oma = c(0,0,1,2), mar=c(4,4,2,1))
-
 
 with(subset(dfWkActivity,dfWkActivity$dayOfWeek == "weekday"),
      plot(int,meanSteps,type = "l",
@@ -379,11 +404,6 @@ with(subset(dfWkActivity,dfWkActivity$dayOfWeek == "weekend"),
 )
 
 title(main = "      Mean Steps in 5 minute intervals for weekdays and weekends",outer = TRUE)
-```
-
-<img src="PA1_template_files/figure-html/unnamed-chunk-13-1.png" title="" alt="" style="display: block; margin: auto;" />
-
-```r
 par(mfrow = mfrowVal)
 ```
 
